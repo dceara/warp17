@@ -111,10 +111,48 @@ available, details can be found in the respective [documentation](ovf/README.md)
 
 ### Install DPDK
 
-Run the automated script with `<version>` as 17.11.6 (the latest LTS supported by warp17)
+Run the automated script with `<version>` as 17.11.10 (the latest LTS supported by warp17)
 
 ```
-# build_dpdk.sh -v <version>
+# ./build_dpdk.sh -v <version>
+```
+
+### Install DPDK (17.11.10) manually on CentOS Linux release 7.6.1810
+
+```
+# Deps
+yum install -y protobuf-c protobuf-c-devel protobuf-devel protobuf-python gcc
+yum install -y numactl-devel ncurses-devel autoconf automake libtool
+yum install "kernel-devel-uname-r == $(uname -r)"
+
+# Get DPDK
+cd
+dpdk_ver=17.11.10
+wget http://fast.dpdk.org/rel/dpdk-${dpdk_ver}.tar.xz
+mkdir dpdk-${dpdk_ver}
+tar -xaf dpdk-${dpdk_ver}.tar.xz -C dpdk-${dpdk_ver} --strip-components=1
+RTE_SDK=$PWD/dpdk-${dpdk_ver}
+RTE_TARGET=x86_64-native-linuxapp-gcc
+echo RTE_SDK=$RTE_SDK >> $HOME/.bash_profile
+echo RTE_TARGET=$RTE_TARGET >> $HOME/.bash_profile
+
+# Build
+pushd $RTE_SDK/
+make T=x86_64-native-linuxapp-gcc install
+popd
+
+# Install protobuf-c-rpc
+cd
+git clone https://github.com/protobuf-c/protobuf-c-rpc
+pushd protobuf-c-rpc
+./autogen.sh && ./configure && make && make install
+popd
+
+# TODO: get warp
+
+# build warp
+cd ~/warp17
+make
 ```
 
 ### Install Google Protocol Buffers
