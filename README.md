@@ -133,11 +133,15 @@ mkdir dpdk-${dpdk_ver}
 tar -xaf dpdk-${dpdk_ver}.tar.xz -C dpdk-${dpdk_ver} --strip-components=1
 RTE_SDK=$PWD/dpdk-${dpdk_ver}
 RTE_TARGET=x86_64-native-linuxapp-gcc
-echo RTE_SDK=$RTE_SDK >> $HOME/.bash_profile
-echo RTE_TARGET=$RTE_TARGET >> $HOME/.bash_profile
+echo "export RTE_SDK=$RTE_SDK" >> ~/.bash_profile
+echo "export RTE_TARGET=$RTE_TARGET" >> ~/.bash_profile
 
 # Build
 pushd $RTE_SDK/
+
+# For MLX support:
+# Set CONFIG_RTE_LIBRTE_MLX5_PMD=y in config/common_base
+
 make T=x86_64-native-linuxapp-gcc install
 popd
 
@@ -153,6 +157,18 @@ popd
 # build warp
 cd ~/warp17
 make
+```
+
+### Reserve 32G Hugepages on CentOS 7.6
+```
+grubby --args="default_hugepagesz=1G hugepagesz=1G hugepages=32" --update-kernel /boot/vmlinuz-3.10.0-957.el7.x86_64
+systemctl restart
+```
+
+### Start Warp17 on CentOS 7.6 with MLX:
+
+```
+LD_LIBRARY_PATH=/usr/local/lib/ ./build/warp17 -c FF -n 4 -m 16384 -w 0000:d8:00.0 -w 0000:d8:00.1
 ```
 
 ### Install Google Protocol Buffers
